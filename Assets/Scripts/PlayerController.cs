@@ -5,11 +5,15 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private InputAction _movement;
     [SerializeField] private float movementSpeed = 4f;
+    [SerializeField] private float orientationSpeed = 360f;
 
     Camera mainCamera;
+    CharacterController characterController;
 
     private void Awake(){
         mainCamera = Camera.main;
+        characterController = GetComponent<CharacterController>();
+        
     }
 
     private void OnEnable(){
@@ -41,9 +45,26 @@ public class PlayerController : MonoBehaviour
 
         Vector3 velocity = movementValueXZ * movementSpeed;
 
+        //transform.position += velocity * Time.deltaTime;      //esto está mal porque hace que no choque con los colliders
+        characterController.Move(velocity * Time.deltaTime);
 
-        transform.position += velocity * Time.deltaTime;
 
+        //ahora para girar el modelo según donde mire la cámara o donde se mueva
+        if(movementValue.magnitude > 0.01f){     //solo nos giramos si nos movemos
+
+            
+            //Vector3 desiredForward = mainCamera.transform.forward;      //esto para que mire donde la cámara
+            Vector3 desiredForward = movementValueXZ;                  //para que mire donde se mueve, mucho más cómodo
+
+            desiredForward = Vector3.ProjectOnPlane(desiredForward, Vector3.up).normalized;
+            Vector3 currentForward = transform.forward;
+            float angleDifference = Vector3.SignedAngle(currentForward, desiredForward, Vector3.up);
+            float angleToApply = Mathf.Min(Mathf.Abs(angleDifference), orientationSpeed * Time.deltaTime);
+            angleToApply *= Mathf.Sign(angleDifference);
+
+            Quaternion rotationToApply = Quaternion.AngleAxis(angleToApply, Vector3.up);
+            transform.rotation = rotationToApply * transform.rotation;          //Con Quaternions el orden es importante y tiene que ir primero
+        }
 
     }
 }
