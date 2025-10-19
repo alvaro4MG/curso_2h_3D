@@ -3,15 +3,23 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private InputAction _movement;
+
+    [Header("Movement Parameters")]
     [SerializeField] private float movementSpeed = 4f;
     [SerializeField] private float orientationSpeed = 360f;
+    [SerializeField] private float jumpSpeed = 7.5f;
+
+    [Header("Inputs")]
+    [SerializeField] private InputAction _movement;
+    [SerializeField] private InputAction _jump;
+
 
     Camera mainCamera;
     CharacterController characterController;
 
     float verticalVelocity = 0f;
     const float gravity = -9.8f;
+    
 
 
 
@@ -23,10 +31,12 @@ public class PlayerController : MonoBehaviour
 
     private void OnEnable(){
         _movement.Enable();
+        _jump.Enable();
     }
 
     private void OnDisable(){
         _movement.Disable();
+        _jump.Disable();
     }
 
 
@@ -52,13 +62,18 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateVerticalMovement(){
 
-        if(characterController.isGrounded){
-            verticalVelocity = 0f;
+        //Update jump
+        if(characterController.isGrounded && _jump.ReadValue<float>() > 0f){
+            verticalVelocity = jumpSpeed;
         }else{
+            //Update gravity
+            if(characterController.isGrounded){
+                verticalVelocity = 0f;
+            }
             // m/s            =  m/s^2  *    s
             verticalVelocity += gravity * Time.deltaTime;
+            
         }
-
 
     }
 

@@ -1342,6 +1342,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55d56564208000c4789e68a59ef4f66d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  movementSpeed: 4
+  orientationSpeed: 360
+  jumpSpeed: 5
   _movement:
     m_Name: Movement
     m_Type: 0
@@ -1391,8 +1394,23 @@ MonoBehaviour:
       m_Action: Movement
       m_Flags: 8
     m_Flags: 0
-  movementSpeed: 4
-  orientationSpeed: 360
+  _jump:
+    m_Name: Jump
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 28a1b1ba-38ef-4498-84f0-352a01432f00
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: 1b4c4434-a649-41fc-8f6d-be565db6e553
+      m_Path: <Keyboard>/space
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Jump
+      m_Flags: 0
+    m_Flags: 0
 --- !u!143 &1346444343
 CharacterController:
   m_ObjectHideFlags: 0
