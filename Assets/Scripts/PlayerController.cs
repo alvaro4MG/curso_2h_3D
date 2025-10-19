@@ -10,6 +10,11 @@ public class PlayerController : MonoBehaviour
     Camera mainCamera;
     CharacterController characterController;
 
+    float verticalVelocity = 0f;
+    const float gravity = -9.8f;
+
+
+
     private void Awake(){
         mainCamera = Camera.main;
         characterController = GetComponent<CharacterController>();
@@ -34,8 +39,33 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector2 movementValue = _movement.ReadValue<Vector2>();     //vector2 tiene X e Y, por lo que hacer esto solo hace que se mueva en la altura (Y)
-        Vector3 movementValueXZ = new Vector3(movementValue.x, 0f, movementValue.y);   //transformamos para tener el Y en el Z
+        Vector2 movementValue;
+        Vector3 movementValueXZ;
+        UpdateVerticalMovement();
+        UpdateMovement(out movementValue, out movementValueXZ);
+        
+        
+        //ahora para girar el modelo según donde mire la cámara o donde se mueva
+        UpdateOrientation(movementValue, movementValueXZ);
+
+    }
+
+    private void UpdateVerticalMovement(){
+
+        if(characterController.isGrounded){
+            verticalVelocity = 0f;
+        }else{
+            // m/s            =  m/s^2  *    s
+            verticalVelocity += gravity * Time.deltaTime;
+        }
+
+
+    }
+
+
+    private void UpdateMovement(out Vector2 movementValue, out Vector3 movementValueXZ){
+        movementValue = _movement.ReadValue<Vector2>();     //vector2 tiene X e Y, por lo que hacer esto solo hace que se mueva en la altura (Y)
+        movementValueXZ = new Vector3(movementValue.x, 0f, movementValue.y);   //transformamos para tener el Y en el Z
         
         float oldMagnitudeXZ = movementValueXZ.magnitude;
         movementValueXZ = mainCamera.transform.TransformDirection(movementValueXZ);     //para cambiar la dirección según la cámara
@@ -43,15 +73,17 @@ public class PlayerController : MonoBehaviour
         movementValueXZ = movementValueXZ.normalized * oldMagnitudeXZ;
 
 
-        Vector3 velocity = movementValueXZ * movementSpeed;
+        Vector3 velocityXZ = movementValueXZ * movementSpeed;
+        Vector3 velocityY = Vector3.up * verticalVelocity;
+        Vector3 velocity = velocityXZ + velocityY;
 
         //transform.position += velocity * Time.deltaTime;      //esto está mal porque hace que no choque con los colliders
         characterController.Move(velocity * Time.deltaTime);
+    }
 
+    private void UpdateOrientation(Vector2 movementValue, Vector3 movementValueXZ){
 
-        //ahora para girar el modelo según donde mire la cámara o donde se mueva
         if(movementValue.magnitude > 0.01f){     //solo nos giramos si nos movemos
-
             
             //Vector3 desiredForward = mainCamera.transform.forward;      //esto para que mire donde la cámara
             Vector3 desiredForward = movementValueXZ;                  //para que mire donde se mueve, mucho más cómodo
@@ -65,6 +97,6 @@ public class PlayerController : MonoBehaviour
             Quaternion rotationToApply = Quaternion.AngleAxis(angleToApply, Vector3.up);
             transform.rotation = rotationToApply * transform.rotation;          //Con Quaternions el orden es importante y tiene que ir primero
         }
-
     }
+
 }
